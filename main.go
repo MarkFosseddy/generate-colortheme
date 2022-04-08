@@ -100,8 +100,13 @@ func hexToRgb(hex string) RGB {
 	return RGB{r, g, b}
 }
 
+func rgbToHex(c RGB) string {
+	return fmt.Sprintf("#%X%X%X", c[0], c[1], c[2])
+}
+
 func main() {
 	rgb := hexToRgb("#7E7EB8")
 	hsl := rgbToHsl(rgb)
-	fmt.Println(rgb, hsl, hslToRgb(hsl))
+	rgb2 := hslToRgb(hsl)
+	fmt.Println("#7E7EB8", rgb, hsl, rgb2, rgbToHex(rgb2))
 }
