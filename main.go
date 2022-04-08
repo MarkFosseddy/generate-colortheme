@@ -10,6 +10,14 @@ import (
 type RGB [3]uint8
 type HSL [3]float64
 
+func max3(a, b, c float64) float64 {
+	return math.Max(math.Max(a, b), c)
+}
+
+func min3(a, b, c float64) float64 {
+	return math.Min(math.Min(a, b), c)
+}
+
 func rgbToHsl(c RGB) HSL {
 	r := float64(c[0]) / 255
 	g := float64(c[1]) / 255
@@ -45,19 +53,28 @@ func rgbToHsl(c RGB) HSL {
 		h += 360
 	}
 
-	h = math.Floor(h * 10) / 10
-	l = math.Floor(l * 1000) / 10
-	s = math.Floor(s * 1000) / 10
+
+	h = math.Round(h * 10) / 10
+	l = math.Round(l * 1000) / 10
+	s = math.Round(s * 1000) / 10
 
 	return HSL{h, s, l}
 }
 
-func max3(a, b, c float64) float64 {
-	return math.Max(math.Max(a, b), c)
-}
+func hslToRgb(c HSL) RGB {
+	h := c[0]
+	s := c[1] / 100
+	l := c[2] / 100
+	a := s * math.Min(l, 1 - l)
 
-func min3(a, b, c float64) float64 {
-	return math.Min(math.Min(a, b), c)
+	f := func(n float64) uint8 {
+		k := math.Mod(n + h / 30, 12)
+		val := l - a * math.Max(-1, min3(k - 3, 9 - k, 1))
+		val = math.Round(val * 255)
+		return uint8(val)
+	}
+
+	return RGB{f(0), f(8), f(4)}
 }
 
 func hexToRgb(hex string) RGB {
@@ -84,16 +101,7 @@ func hexToRgb(hex string) RGB {
 }
 
 func main() {
-	fmt.Println(rgbToHsl(hexToRgb("#FFFFFF")))
-	fmt.Println(rgbToHsl(hexToRgb("#808080")))
-	fmt.Println(rgbToHsl(hexToRgb("#000000")))
-	fmt.Println(rgbToHsl(hexToRgb("#FF0000")))
-	fmt.Println(rgbToHsl(hexToRgb("#BFBF00")))
-	fmt.Println(rgbToHsl(hexToRgb("#008000")))
-	fmt.Println(rgbToHsl(hexToRgb("#80FFFF")))
-	fmt.Println(rgbToHsl(hexToRgb("#8080FF")))
-	fmt.Println(rgbToHsl(hexToRgb("#BF40BF")))
-	fmt.Println(rgbToHsl(hexToRgb("#A0A424")))
-	fmt.Println(rgbToHsl(hexToRgb("#362698")))
-	fmt.Println(rgbToHsl(hexToRgb("#7E7EB8")))
+	rgb := hexToRgb("#7E7EB8")
+	hsl := rgbToHsl(rgb)
+	fmt.Println(rgb, hsl, hslToRgb(hsl))
 }
