@@ -7,34 +7,49 @@ import (
 	"strconv"
 )
 
-func calcHue(r, g, b uint8) float64 {
-	R := float64(r) / 255
-	G := float64(g) / 255
-	B := float64(b) / 255
+type RGB [3]uint8
+type HSL [3]float64
 
-	max := max3(R, G, B)
-	min := min3(R, G, B)
+func rgbToHsl(c RGB) HSL {
+	r := float64(c[0]) / 255
+	g := float64(c[1]) / 255
+	b := float64(c[2]) / 255
 
-	if max - min == 0 {
-		return 0
-	}
+	max := max3(r, g, b)
+	min := min3(r, g, b)
 
-	var hue float64
-	if R == max {
-		hue = (G - B) / (max - min)
-	} else if G == max {
-		hue = 2.0 + (B - R) / (max - min)
+	l := (max + min) / 2
+
+	var s float64
+	if l == 0 || l == 1 {
+		s = 0
 	} else {
-		hue = 4.0 + (R - G) / (max - min)
+		s = (max - min) / (1 - math.Abs(2 * l - 1))
 	}
 
-	hue *= 60
-
-	if hue < 0 {
-		hue += 360
+	var h float64
+	switch {
+	case max - min == 0:
+		h = 0
+	case r == max:
+		h = math.Mod((g - b) / (max - min), 6)
+	case g == max:
+		h = 2.0 + (b - r) / (max - min)
+	case b == max:
+		h = 4.0 + (r - g) / (max - min)
 	}
 
-	return math.Round(hue * 10) / 10
+	h *= 60
+
+	if h < 0 {
+		h += 360
+	}
+
+	h = math.Floor(h * 10) / 10
+	l = math.Floor(l * 1000) / 10
+	s = math.Floor(s * 1000) / 10
+
+	return HSL{h, s, l}
 }
 
 func max3(a, b, c float64) float64 {
@@ -45,34 +60,40 @@ func min3(a, b, c float64) float64 {
 	return math.Min(math.Min(a, b), c)
 }
 
-func hexToRgb(hex string) (uint8, uint8, uint8) {
+func hexToRgb(hex string) RGB {
 	hex = hex[1:]
 
 	if len(hex) != 6 {
 		log.Fatal("Invalid hex")
 	}
 
-	r, err := strconv.ParseInt(hex[0:2], 16, 0)
-	if err != nil {
-		log.Fatal("Invalid hex")
+	toDecimal := func(val string) uint8 {
+		v, err := strconv.ParseInt(val, 16, 0)
+		if err != nil {
+			log.Fatal("Invalid hex")
+		}
+
+		return uint8(v)
 	}
 
-	g, err := strconv.ParseInt(hex[2:4], 16, 0)
-	if err != nil {
-		log.Fatal("Invalid hex")
-	}
+	r := toDecimal(hex[0:2])
+	g := toDecimal(hex[2:4])
+	b := toDecimal(hex[4:6])
 
-	b, err := strconv.ParseInt(hex[4:6], 16, 0)
-	if err != nil {
-		log.Fatal("Invalid hex")
-	}
-
-	return uint8(r), uint8(g), uint8(b)
+	return RGB{r,g,b}
 }
 
 func main() {
-	r, g, b := hexToRgb("#161821")
-	hue := calcHue(r, g, b)
-
-	fmt.Println(r, g, b, hue)
+	fmt.Println(rgbToHsl(hexToRgb("#FFFFFF")))
+	fmt.Println(rgbToHsl(hexToRgb("#808080")))
+	fmt.Println(rgbToHsl(hexToRgb("#000000")))
+	fmt.Println(rgbToHsl(hexToRgb("#FF0000")))
+	fmt.Println(rgbToHsl(hexToRgb("#BFBF00")))
+	fmt.Println(rgbToHsl(hexToRgb("#008000")))
+	fmt.Println(rgbToHsl(hexToRgb("#80FFFF")))
+	fmt.Println(rgbToHsl(hexToRgb("#8080FF")))
+	fmt.Println(rgbToHsl(hexToRgb("#BF40BF")))
+	fmt.Println(rgbToHsl(hexToRgb("#A0A424")))
+	fmt.Println(rgbToHsl(hexToRgb("#362698")))
+	fmt.Println(rgbToHsl(hexToRgb("#7E7EB8")))
 }
