@@ -97,7 +97,7 @@ func hexToRgb(hex string) RGB {
 	g := toDecimal(hex[2:4])
 	b := toDecimal(hex[4:6])
 
-	return RGB{r,g,b}
+	return RGB{r, g, b}
 }
 
 func main() {
