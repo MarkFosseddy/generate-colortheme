@@ -124,7 +124,7 @@ func main() {
 	flag.Parse()
 
 	if *n == "" || *fg == "" || *bg == "" || *str == "" || *kwd == "" {
-		fmt.Fprintln(os.Stderr, "Usage: generate-colortheme [OPTIONS]")
+		fmt.Fprintln(os.Stderr, "Usage: generate-colortheme [OPTION]=[VALUE]")
 		fmt.Fprintln(os.Stderr, "Options:")
 		flag.PrintDefaults()
 		os.Exit(1)
