@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 	"math"
-	"log"
 	"strconv"
+	"flag"
+	"os"
 )
 
 type rgb struct { r, g, b uint8 }
@@ -62,7 +63,7 @@ func (color rgb) toHsl() hsl {
 }
 
 func (color rgb) toHex() string {
-	return fmt.Sprintf("#%X%X%X", color.r, color.g, color.b)
+	return fmt.Sprintf("#%02x%02x%02x", color.r, color.g, color.b)
 }
 
 func (color hsl) toRgb() rgb {
@@ -81,17 +82,21 @@ func (color hsl) toRgb() rgb {
 	return rgb{f(0), f(8), f(4)}
 }
 
+func (color hsl) toHex() string {
+	return color.toRgb().toHex()
+}
+
 func hexToRgb(hex string) rgb {
 	hex = hex[1:]
 
 	if len(hex) != 6 {
-		log.Fatal("Invalid hex")
+		panic("Invalid hex")
 	}
 
 	toDecimal := func(val string) uint8 {
 		v, err := strconv.ParseInt(val, 16, 0)
 		if err != nil {
-			log.Fatal("Invalid hex")
+			panic("Invalid hex")
 		}
 
 		return uint8(v)
@@ -104,11 +109,39 @@ func hexToRgb(hex string) rgb {
 	return rgb{r, g, b}
 }
 
+func hexToHsl(hex string) hsl {
+	return hexToRgb(hex).toHsl()
+}
+
 func main() {
-	hsl := hexToRgb("#161821").toHsl()
-	for i := 0; i < 6; i += 1 {
-		hsl.l += 4
-		rgb := hsl.toRgb()
-		fmt.Println("https://colorhexa.com/" + rgb.toHex()[1:])
+	n := flag.String("n", "", "theme name")
+	fg := flag.String("fg", "", "foreground `hex` color")
+	bg := flag.String("bg", "", "background `hex` color")
+	str := flag.String("str", "", "string `hex` color")
+	kwd := flag.String("kwd", "", "keyword `hex` color")
+
+	flag.Parse()
+
+	if *n == "" || *fg == "" || *bg == "" || *str == "" || *kwd == "" {
+		flag.PrintDefaults()
+		os.Exit(1)
 	}
+
+	back := hexToHsl(*bg)
+	back.l -= 4
+	dbg := back.toHex()
+
+	back.l += 28
+	lbg := back.toHex()
+
+	fmt.Printf(
+		"\"%s\": {\n" +
+		"\t\"fg\":      \"%s\",\n" +
+		"\t\"bg\":      \"%s\",\n" +
+		"\t\"lbg\":     \"%s\",\n" +
+		"\t\"dbg\":     \"%s\",\n" +
+		"\t\"string\":  \"%s\",\n" +
+		"\t\"keyword\": \"%s\"\n" +
+		"}\n", *n, *fg, *bg, lbg, dbg, *str, *kwd,
+	)
 }
