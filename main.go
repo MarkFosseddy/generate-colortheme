@@ -90,13 +90,15 @@ func hexToRgb(hex string) rgb {
 	hex = hex[1:]
 
 	if len(hex) != 6 {
-		panic("Invalid hex")
+		fmt.Fprintln(os.Stderr, "Invalid hex")
+		os.Exit(1)
 	}
 
 	toDecimal := func(val string) uint8 {
 		v, err := strconv.ParseInt(val, 16, 0)
 		if err != nil {
-			panic("Invalid hex")
+			fmt.Fprintln(os.Stderr, "Invalid hex")
+			os.Exit(1)
 		}
 
 		return uint8(v)
@@ -123,6 +125,8 @@ func main() {
 	flag.Parse()
 
 	if *n == "" || *fg == "" || *bg == "" || *str == "" || *kwd == "" {
+		fmt.Fprintln(os.Stderr, "Usage: generate-colortheme [OPTIONS]")
+		fmt.Fprintln(os.Stderr, "Options:")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
