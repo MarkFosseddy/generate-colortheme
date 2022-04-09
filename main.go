@@ -7,8 +7,8 @@ import (
 	"strconv"
 )
 
-type RGB [3]uint8
-type HSL [3]float64
+type rgb struct { r, g, b uint8 }
+type hsl struct { h, s, l float64 }
 
 func max3(a, b, c float64) float64 {
 	return math.Max(math.Max(a, b), c)
@@ -18,10 +18,10 @@ func min3(a, b, c float64) float64 {
 	return math.Min(math.Min(a, b), c)
 }
 
-func rgbToHsl(c RGB) HSL {
-	r := float64(c[0]) / 255
-	g := float64(c[1]) / 255
-	b := float64(c[2]) / 255
+func (color rgb) toHsl() hsl {
+	r := float64(color.r) / 255
+	g := float64(color.g) / 255
+	b := float64(color.b) / 255
 
 	max := max3(r, g, b)
 	min := min3(r, g, b)
@@ -58,13 +58,17 @@ func rgbToHsl(c RGB) HSL {
 	l = math.Round(l * 1000) / 10
 	s = math.Round(s * 1000) / 10
 
-	return HSL{h, s, l}
+	return hsl{h, s, l}
 }
 
-func hslToRgb(c HSL) RGB {
-	h := c[0]
-	s := c[1] / 100
-	l := c[2] / 100
+func (color rgb) toHex() string {
+	return fmt.Sprintf("#%X%X%X", color.r, color.g, color.b)
+}
+
+func (color hsl) toRgb() rgb {
+	h := color.h
+	s := color.s / 100
+	l := color.l / 100
 	a := s * math.Min(l, 1 - l)
 
 	f := func(n float64) uint8 {
@@ -74,10 +78,10 @@ func hslToRgb(c HSL) RGB {
 		return uint8(val)
 	}
 
-	return RGB{f(0), f(8), f(4)}
+	return rgb{f(0), f(8), f(4)}
 }
 
-func hexToRgb(hex string) RGB {
+func hexToRgb(hex string) rgb {
 	hex = hex[1:]
 
 	if len(hex) != 6 {
@@ -97,16 +101,14 @@ func hexToRgb(hex string) RGB {
 	g := toDecimal(hex[2:4])
 	b := toDecimal(hex[4:6])
 
-	return RGB{r, g, b}
-}
-
-func rgbToHex(c RGB) string {
-	return fmt.Sprintf("#%X%X%X", c[0], c[1], c[2])
+	return rgb{r, g, b}
 }
 
 func main() {
-	rgb := hexToRgb("#7E7EB8")
-	hsl := rgbToHsl(rgb)
-	rgb2 := hslToRgb(hsl)
-	fmt.Println("#7E7EB8", rgb, hsl, rgb2, rgbToHex(rgb2))
+	hsl := hexToRgb("#161821").toHsl()
+	for i := 0; i < 6; i += 1 {
+		hsl.l += 4
+		rgb := hsl.toRgb()
+		fmt.Println("https://colorhexa.com/" + rgb.toHex()[1:])
+	}
 }
