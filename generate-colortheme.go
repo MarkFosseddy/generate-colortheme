@@ -55,8 +55,8 @@ func (color rgb) toHsl() hsl {
 	}
 
 	h = math.Round(h * 10) / 10
-	l = math.Round(l * 1000) / 10
-	s = math.Round(s * 1000) / 10
+	l = math.Round(l * 100 * 10) / 10
+	s = math.Round(s * 100 * 10) / 10
 
 	return hsl{h, s, l}
 }
